@@ -42,6 +42,10 @@ const clientId = "2020122653946739963336";
 const userId = "21661000000446291765";
 const base_url = "https://vodapay-gateway.sandbox.vfs.africa"
 
+  app.get('/',(req, res)=>{
+    res.send(menu);  
+})
+
 app.get('/launch', (req, res) => {
   const launchData = {
     menu,
