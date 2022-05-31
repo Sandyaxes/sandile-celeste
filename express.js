@@ -4,7 +4,7 @@ const axios = require('axios').default;
 const atob = require('atob')
 const { DateTime } = require("luxon");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 const jwt = require('jsonwebtoken')
