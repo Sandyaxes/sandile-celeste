@@ -133,7 +133,6 @@ app.post('/auth', async (req, res)=>{
 
     let data = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
     res.send({data:data.userInfo});
-    console.log(data.userInfo)
 })
 
 app.post('/payment', async (req, res)=>{
@@ -184,7 +183,6 @@ app.post('/payment', async (req, res)=>{
   }
 
   let payment = await axios(options).catch(function (error){console.log(error)});
-  console.log(payment.data);
   res.send(payment.data);
 
 });
