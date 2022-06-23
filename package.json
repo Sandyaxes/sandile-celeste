@@ -2,6 +2,9 @@
   "name": "Celeste-server",
   "version": "1.0.0",
   "description": "",
+    "engines": {
+    "node": "6.11.1"
+  },
   "main": "express.js",
   "scripts": {
     "start": "node express.js",
