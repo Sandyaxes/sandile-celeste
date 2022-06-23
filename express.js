@@ -1,13 +1,16 @@
 require('dotenv').config()
 const express = require('express');
 const axios = require('axios').default;
-const atob = require('atob')
-const { DateTime } = require("luxon");
+const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
+
+const crypto = require('crypto');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 
 app.use(express.json());
-const jwt = require('jsonwebtoken')
+
 
 let menu = [
     {
@@ -39,39 +42,35 @@ let menu = [
 
 let price = 'R100';
 const clientId = "2020122653946739963336";
-const userId = "21661000000446291765";
+// const userId = "21661000000446291765";
 const base_url = "https://vodapay-gateway.sandbox.vfs.africa"
 
-  app.get('/',(req, res)=>{
-    res.send(menu);  
-})
-
-app.get('/launch', (req, res) => {
-  const launchData = {
-    menu,
-    price,
-    tableNo: Math.floor(Math.random(1,100) * 100) 
-  }
-  res.send(launchData)
-  });
+// app.get('/launch', (req, res) => {
+//   const launchData = {
+//     menu,
+//     price,
+//     tableNo: Math.floor(Math.random(1,100) * 100) 
+//   }
+//   res.send(launchData)
+//   });
   
   app.get('/menu',(req, res)=>{
     res.send(menu);  
 })
 
-app.get('/menu/:id',(req, res)=>{
-    const {id} = req.params;
-    const item = menu.find((item) => item.id === id);
-    if (item) res.status(201).send(item);
-    else res.status(404).send('Not Found');
-})
+// app.get('/menu/:id',(req, res)=>{
+//     const {id} = req.params;
+//     const item = menu.find((item) => item.id === id);
+//     if (item) res.status(201).send(item);
+//     else res.status(404).send('Not Found');
+// })
 
-app.post('/menu',(req, res)=>{
-    const addMenu = req.body;
-    menu.push(addMenu);
-    console.log(menu);
-    res.send(menu);
-})
+// app.post('/menu',(req, res)=>{
+//     const addMenu = req.body;
+//     menu.push(addMenu);
+//     console.log(menu);
+//     res.send(menu);
+// })
 
 const moment = require('moment');
 
@@ -82,133 +81,124 @@ const getRequestTime = () => {
     return time;
 }
 
-app.post('/getToken', async (req, res)=>{
+const requestTime = getRequestTime();
+app.post('/auth', async (req, res)=>{
+
+
 
   const body = {
     "grantType": "AUTHORIZATION_CODE",
     "authCode": req.body.authCode
   }
+ 
+   const unSignedContent = `POST /v2/authorizations/applyTokenSigned\n${clientId}.${requestTime}.${JSON.stringify(body)}`;
+   const headers = {
+    'Content-Type': 'application/json; charset=UTF-8',
+    'client-id': clientId,
+    'request-time': requestTime,
+    'signature': `algorithm=RSA256, keyVersion=1, signature=${createSignature(unSignedContent)}`,
+  };
 
-
-  const options = {
+  const accessTokenOptions = {
     method: 'POST',
-    url: 'https://vodapay-gateway.sandbox.vfs.africa/v2/authorizations/applyToken',
-    headers: {
-      'Content-Type': 'application/json; charset=UTF-8',
-      'client-id': clientId,
-      'request-time': getRequestTime(),
-      'signature': 'algorithm=RSA256, keyVersion=1, signature=testing_signatur',
-    },
+    url: base_url+'/v2/authorizations/applyTokenSigned',
+    headers: headers,
    data: body
   };
 
-    let response;
-    try{
-      response = await axios(options);
-      console.log(response.data)
-    } catch(err){
-      console.log('FAILED');
-      console.log(err.message);
-    }
 
-    res.send(response.data);
+    let response = await axios(accessTokenOptions);
+    let infoToken = response.data.accessToken;
+
+    const userInfoBody = {
+      'accessToken': infoToken
+    };
+
+    const options = {
+      method: 'POST',
+      url: base_url+'/v2/customers/user/inquiryUserInfo',
+      headers: headers,
+      data: userInfoBody
+    };
+
+    response = await axios(options);
+
+    let userInfo = {
+        UserName: response.data.userInfo.nickName,
+        Email: response.data.userInfo.contactInfos[0].contactNo,
+        Phone: response.data.userInfo.contactInfos[1].contactNo
+      }
+  
+    const accessToken = jwt.sign({userInfo}, process.env.ACCESS_TOKEN_SECRET)
+
+    let data = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
+    res.send({data:data.userInfo});
+    console.log(data.userInfo)
 })
 
-// app.post('/getUserInfo', async (req, res)=>{
-//   const userInfoBody = {
-//     'accessToken': req.body.accessToken
-//   };
+app.post('/payment', async (req, res)=>{
 
-//   const options = {
-//     method: 'POST',
-//     url: 'https://vodapay-gateway.sandbox.vfs.africa/v2/customers/user/inquiryUserInfo',
-//     headers: {
-//       'Content-Type': 'application/json; charset=UTF-8',
-//       'client-id': clientId,
-//       'request-time': getRequestTime(),
-//       'signature': 'algorithm=RSA256, keyVersion=1, signature=testing_signatur',
-//     },
-//     data: userInfoBody
-//   };
-
-//   let  response = await axios(options);
-    
-//   let userInfo = {
-//       UserName: response.data.userInfo.nickName,
-//       Email: response.data.userInfo.contactInfos[0].contactNo,
-//       Phone: response.data.userInfo.contactInfos[1].contactNo
-//     }
-
-//   console.log(userInfo)
-//   res.send(userInfo);
-// })
-
-app.post('/getUserToken', async (req, res)=>{
-  const userInfoBody = {
-    'accessToken': req.body.Token
-  };
-
-  const options = {
-    method: 'POST',
-    url: 'https://vodapay-gateway.sandbox.vfs.africa/v2/customers/user/inquiryUserInfo',
-    headers: {
-      'Content-Type': 'application/json; charset=UTF-8',
-      'client-id': clientId,
-      'request-time': getRequestTime(),
-      'signature': 'algorithm=RSA256, keyVersion=1, signature=testing_signatur',
+  const body = {
+    productCode: "CASHIER_PAYMENT",
+    salesCode: "51051000101000000011",
+    paymentRequestId: uuidv4(),
+    paymentNotifyUrl:"https://www.merchant.com/paymentNotification",
+    paymentRedirectUrl:"https://www.merchant.com/Notification",
+    paymentExpiryTime:"2023-02-22T17:49:31+08:00",
+    paymentAmount:{
+        currency:"ZAR",
+        value:"6234"
     },
-    data: userInfoBody
-  };
-
-  let  response = await axios(options);
-    
-  let userInfo = {
-      UserName: response.data.userInfo.nickName,
-      Email: response.data.userInfo.contactInfos[0].contactNo,
-      Phone: response.data.userInfo.contactInfos[1].contactNo
-    }
-
-  // const username = userInfo.UserName
-  // const user = {name: username}
-  const accessToken = jwt.sign({userInfo}, process.env.ACCESS_TOKEN_SECRET)
-  res.json({accessToken: accessToken})
-  console.log(accessToken)
-})
-
-app.post('/getUserInfo', authToken, (req, res) => {
-  let data = jwt.verify(req.Token, process.env.ACCESS_TOKEN_SECRET)
-  res.send(data)
-  console.log(data)
-});
-
-function authToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  if(typeof authHeader !== 'undefined'){
-    const token = authHeader.split(' ')[1]
-    req.Token = token;
-    next();
-  } else {
-    res.sendStatus(403);
+    order:{
+      goods:{
+          referenceGoodsId:"goods123",
+          goodsUnitAmount:{
+              currency:"ZAR",
+              value:"6234"
+          },
+          goodsName:"mobile1"
+      },
+      env:{
+          terminalType:"MINI_APP"
+      },
+      orderDescription:"Car",
+      buyer:{
+          referenceBuyerId:'216610000000446291765'
+      }
+  }
   }
 
+  const unSignedContent = `POST /v2/authorizations/applyTokenSigned\n${clientId}.${requestTime}.${JSON.stringify(body)}`;
+  const headers = {
+   'Content-Type': 'application/json; charset=UTF-8',
+   'client-id': clientId,
+   'request-time': requestTime,
+   'signature': `algorithm=RSA256, keyVersion=1, signature=${createSignature(unSignedContent)}`,
+ };
+
+  let options = {
+    method: 'Post',
+    url: base_url+'/v2/payments/pay',
+    headers: headers,
+    data: body
+  }
+
+  let payment = await axios(options).catch(function (error){console.log(error)});
+  console.log(payment.data);
+  res.send(payment.data);
+
+});
+
+function createSignature(unSignedContent){
+  const privateKey = fs.readFileSync("rsa_private_key.pem", "utf8");
+  const key = crypto.createPrivateKey(privateKey);
+  const sign = crypto.createSign("RSA-SHA256");
+  sign.write(unSignedContent);
+  sign.end();
+  const signature = sign.sign(key, "base64");
+  return signature
+
 }
-
-
-app.patch('/menu/:id',(req, res)=>{
-  const id = +req.params.id;
-  const body = req.body;
-  const index = menu.findIndex((item) => item.id === id);
-  const updatedMenu = {id: id, ...body};
-  menu[index] = updatedMenu;
-  res.send(updatedMenu);
-})
-
-app.delete("/menu/:id", (req, res)=>{
-  const id = +req.params.id;
-  const index = menu.findIndex((item) => item.id === id);
-  let deletedMenu = menu.splice(index, 1);
-  res.send(deletedMenu)
-})
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`)
