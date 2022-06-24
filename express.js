@@ -76,7 +76,7 @@ const base_url = "https://vodapay-gateway.sandbox.vfs.africa"
 
 const getRequestTime = () => {
     const now = DateTime.now();
-    const time = now.format('yyyy-MM-DDTHH:mm:ssZZ')
+    const time = now.toISO('yyyy-MM-DDTHH:mm:ssZZ')
 
     return time;
 }
