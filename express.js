@@ -172,7 +172,7 @@ app.post('/payment', async (req, res)=>{
   }
   }
 
-  const unSignedContent = `POST /v2/authorizations/applyTokenSigned\n${clientId}.${requestTime}.${JSON.stringify(body)}`;
+  const unSignedContent = `POST /v2/payments/pay\n${clientId}.${requestTime}.${JSON.stringify(body)}`;
   const headers = {
    'Content-Type': 'application/json; charset=UTF-8',
    'client-id': clientId,
