@@ -44,35 +44,11 @@ let menu = [
 let price = 'R100';
 const clientId = "2020122653946739963336";
 // const userId = "21661000000446291765";
-const base_url = "https://vodapay-gateway.sandbox.vfs.africa"
-
-// app.get('/launch', (req, res) => {
-//   const launchData = {
-//     menu,
-//     price,
-//     tableNo: Math.floor(Math.random(1,100) * 100) 
-//   }
-//   res.send(launchData)
-//   });
+const base_url = "https://vodapay-gateway.sandbox.vfs.africa";
   
   app.get('/menu',(req, res)=>{
     res.send(menu);  
 })
-
-// app.get('/menu/:id',(req, res)=>{
-//     const {id} = req.params;
-//     const item = menu.find((item) => item.id === id);
-//     if (item) res.status(201).send(item);
-//     else res.status(404).send('Not Found');
-// })
-
-// app.post('/menu',(req, res)=>{
-//     const addMenu = req.body;
-//     menu.push(addMenu);
-//     console.log(menu);
-//     res.send(menu);
-// })
-
 
 const getRequestTime = () => {
     const now = DateTime.now();
