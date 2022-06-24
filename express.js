@@ -4,6 +4,7 @@ const axios = require('axios').default;
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
+const {DateTime} = require('luxon')
 
 const crypto = require('crypto');
 const app = express();
@@ -72,19 +73,18 @@ const base_url = "https://vodapay-gateway.sandbox.vfs.africa"
 //     res.send(menu);
 // })
 
-const moment = require('moment');
 
 const getRequestTime = () => {
-    const now = moment();
-    const time = now.format('yyyy-MM-DDTHH:mm:ssZ')
+    const now = DateTime.now();
+    const time = now.format('yyyy-MM-DDTHH:mm:ssZZ')
 
     return time;
 }
 
-const requestTime = getRequestTime();
+
 app.post('/auth', async (req, res)=>{
 
-
+  const requestTime = getRequestTime();
 
   const body = {
     "grantType": "AUTHORIZATION_CODE",
@@ -139,6 +139,7 @@ app.post('/auth', async (req, res)=>{
 })
 
 app.post('/payment', async (req, res)=>{
+  const requestTime = getRequestTime();
 
   const userId = req.body.userId;
 
@@ -147,7 +148,6 @@ app.post('/payment', async (req, res)=>{
     salesCode: "51051000101000000011",
     paymentRequestId: uuidv4(),
     paymentNotifyUrl:"https://www.merchant.com/paymentNotification",
-    paymentRedirectUrl:"https://www.merchant.com/Notification",
     paymentExpiryTime:"2023-02-22T17:49:31+08:00",
     paymentAmount:{
         currency:"ZAR",
