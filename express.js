@@ -127,9 +127,10 @@ app.post('/auth', async (req, res)=>{
         UserName: response.data.userInfo.nickName,
         Email: response.data.userInfo.contactInfos[0].contactNo,
         Phone: response.data.userInfo.contactInfos[1].contactNo,
-        userId: response.userInfo.userId
+        userId: response.data.userInfo.userId
       }
   
+
     const accessToken = jwt.sign({userInfo}, process.env.ACCESS_TOKEN_SECRET)
 
     let data = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
@@ -138,6 +139,8 @@ app.post('/auth', async (req, res)=>{
 })
 
 app.post('/payment', async (req, res)=>{
+
+  const userId = req.body.userId;
 
   const body = {
     productCode: "CASHIER_PAYMENT",
@@ -164,7 +167,7 @@ app.post('/payment', async (req, res)=>{
       },
       orderDescription:"Car",
       buyer:{
-          referenceBuyerId:'216610000000446291765'
+          referenceBuyerId:userId
       }
   }
   }
