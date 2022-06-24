@@ -126,13 +126,15 @@ app.post('/auth', async (req, res)=>{
     let userInfo = {
         UserName: response.data.userInfo.nickName,
         Email: response.data.userInfo.contactInfos[0].contactNo,
-        Phone: response.data.userInfo.contactInfos[1].contactNo
+        Phone: response.data.userInfo.contactInfos[1].contactNo,
+        userId: response.userInfo.userId
       }
   
     const accessToken = jwt.sign({userInfo}, process.env.ACCESS_TOKEN_SECRET)
 
     let data = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
     res.send({data:data.userInfo});
+    // console.log(data.userInfo)
 })
 
 app.post('/payment', async (req, res)=>{
@@ -183,6 +185,7 @@ app.post('/payment', async (req, res)=>{
   }
 
   let payment = await axios(options).catch(function (error){console.log(error)});
+  console.log(payment.data);
   res.send(payment.data);
 
 });
