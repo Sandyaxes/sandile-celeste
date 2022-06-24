@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 
 const crypto = require('crypto');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT3000;
 
 app.use(express.json());
 
@@ -172,6 +172,7 @@ app.post('/payment', async (req, res)=>{
   }
   }
 
+  console.log(body)
   const unSignedContent = `POST /v2/payments/pay\n${clientId}.${requestTime}.${JSON.stringify(body)}`;
   const headers = {
    'Content-Type': 'application/json; charset=UTF-8',
