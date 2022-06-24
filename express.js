@@ -175,7 +175,7 @@ app.post('/payment', async (req, res)=>{
   console.log(body)
   const unSignedContent = `POST /v2/payments/pay\n${clientId}.${requestTime}.${JSON.stringify(body)}`;
   const headers = {
-   'Content-Type': 'application/json; charset=UTF-8',
+   'Content-Type': 'application/json',
    'client-id': clientId,
    'request-time': requestTime,
    'signature': `algorithm=RSA256, keyVersion=1, signature=${createSignature(unSignedContent)}`,
@@ -188,7 +188,7 @@ app.post('/payment', async (req, res)=>{
     data: body
   }
 
-  let payment = await axios(options).catch(function (error){console.log(error)});
+  let payment = await axios(options);
   console.log(payment.data);
   res.send(payment.data);
 
