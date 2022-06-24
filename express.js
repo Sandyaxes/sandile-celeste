@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 
 const crypto = require('crypto');
 const app = express();
-const port = process.env.PORT3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
