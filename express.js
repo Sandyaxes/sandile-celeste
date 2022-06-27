@@ -118,6 +118,7 @@ app.post('/payment', async (req, res)=>{
   const requestTime = getRequestTime();
 
   const userId = req.body.userId;
+  const totalCost = req.body.paymentRecord.cost;
 
   const body = {
     productCode: "CASHIER_PAYMENT",
@@ -127,28 +128,26 @@ app.post('/payment', async (req, res)=>{
     paymentExpiryTime:"2023-02-22T17:49:31+08:00",
     paymentAmount:{
         currency:"ZAR",
-        value:"6234"
+        value:`${totalCost}00`
     },
     order:{
       goods:{
           referenceGoodsId:"goods123",
           goodsUnitAmount:{
               currency:"ZAR",
-              value:"6234"
+              value:`${totalCost}00`
           },
           goodsName:"mobile1"
       },
       env:{
           terminalType:"MINI_APP"
       },
-      orderDescription:"Car",
+      orderDescription:"Meal & drinks",
       buyer:{
           referenceBuyerId:userId
       }
   }
   }
-
-  console.log(body)
   const unSignedContent = `POST /v2/payments/pay\n${clientId}.${requestTime}.${JSON.stringify(body)}`;
   const headers = {
    'Content-Type': 'application/json',
