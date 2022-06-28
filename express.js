@@ -110,7 +110,7 @@ app.post('/auth', async (req, res)=>{
     const accessToken = jwt.sign({userInfo}, process.env.ACCESS_TOKEN_SECRET)
 
     let data = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
-    res.send(data.userInfo);
+    res.send(data);
     // console.log(data.userInfo)
 })
 
