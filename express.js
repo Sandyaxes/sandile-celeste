@@ -197,12 +197,11 @@ const {DateTime} = require('luxon')
 
 const crypto = require('crypto');
 const app = express();
-const port = process.env.PORT || 3000;
+const port =  process.env.PORT || 3000;
 
 
 const clientId = "2020122653946739963336";
 const base_url = "https://vodapay-gateway.sandbox.vfs.africa";
-// let price = 'R100';
 
 app.use(express.json());
 
@@ -299,21 +298,17 @@ app.post('/auth', async (req, res)=>{
   
 
     const accessToken = jwt.sign({userInfo}, process.env.ACCESS_TOKEN_SECRET)
-
-    // let data = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
     res.send({user: userInfo, token:accessToken});
-    // console.log(data.userInfo)
 })
 
-app.post('/payment', async (req, res)=>{
+app.post('/payment', async (req, res, next)=>{
   const requestTime = getRequestTime();
   const expirey = DateTime.now().plus({ hours: 2 })
   const paymentExpirey = expirey.toISO('yyyy-MM-ddTHH:mm:ssZZ')
 
-  const authorization  = req.headers;
-  const token = authorization.replace("bearer ", "");
+  const {authorization } = req.headers;
+  const token = authorization.replace("Bearer ", "");
   const userId = req.body.userId;
-    // const token = req.headers.token
   const totalCost = req.body.paymentRecord.cost;
 
   jwt.verify(token,process.env.ACCESS_TOKEN_SECRET, async (err) => {
@@ -344,7 +339,7 @@ app.post('/payment', async (req, res)=>{
       env:{
           terminalType:"MINI_APP"
       },
-      orderDescription:"Meal & drinks",
+      orderDescription:"Meals & drinks",
       buyer:{
           referenceBuyerId:userId
       }
@@ -366,7 +361,6 @@ app.post('/payment', async (req, res)=>{
   }
 
   let payment = await axios(options);
-  console.log(payment.data);
   res.send(payment.data);
 
 });
