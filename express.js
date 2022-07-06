@@ -116,6 +116,8 @@ app.post('/auth', async (req, res)=>{
 
 app.post('/payment', async (req, res)=>{
   const requestTime = getRequestTime();
+  const expirey = DateTime.now().plus({ hours: 2 })
+  const paymentExpirey = expirey.toISO('yyyy-MM-ddTHH:mm:ssZZ')
 
   const userId = req.body.userId;
   const totalCost = req.body.paymentRecord.cost;
@@ -125,7 +127,7 @@ app.post('/payment', async (req, res)=>{
     salesCode: "51051000101000000011",
     paymentRequestId: uuidv4(),
     paymentNotifyUrl:"https://www.merchant.com/paymentNotification",
-    paymentExpiryTime:"2023-02-22T17:49:31+08:00",
+    paymentExpiryTime:paymentExpirey,
     paymentAmount:{
         currency:"ZAR",
         value:`${totalCost}00`
